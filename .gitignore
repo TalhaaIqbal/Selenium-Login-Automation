@@ -1,0 +1,82 @@
+# ==========================================
+# Operating Systems (OS Junk Files)
+# ==========================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# ==========================================
+# IDEs and Text Editors
+# ==========================================
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# JetBrains (IntelliJ, WebStorm, PyCharm, etc.)
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Local history / Crash dumps
+.history/
+*.log
+*.log.*
+logs/
+
+# ==========================================
+# Programming Languages & Frameworks
+# ==========================================
+# Node.js / JavaScript
+node_modules/
+jspm_packages/
+pnpm-store/
+.npm
+.yarn/
+dist/
+build/
+.cache/
+out/
+.next/
+.nuxt/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.env/
+ENV/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ==========================================
+# Secrets and Credentials (CRITICAL)
+# ==========================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+*.key
+*.secret
