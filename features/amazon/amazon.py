@@ -34,7 +34,9 @@ def amazon_search():
 
         # Call search function
         results = search_products(driver, query)
-        print(results)
+        logger.info("Search results: %s", results)
+        
+        input("Press Enter to continue...")
 
     except Exception:
         logger.exception("Amazon search failed")
