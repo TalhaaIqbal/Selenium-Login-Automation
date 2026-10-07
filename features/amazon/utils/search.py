@@ -18,6 +18,8 @@ from .get_text import get_text
 
 CARD_SELECTOR = 'div[data-component-type="s-search-result"]'
 OUTPUT_FILE = "amazon_search_results.csv"
+WAIT_TIMEOUT = 90
+MAX_ROUNDS = 10
 
 
 def card_asins(driver):
@@ -115,7 +117,7 @@ def save(results):
     logger.info("Saved %s products to %s", len(results), OUTPUT_FILE)
 
 
-def search_products(driver, query, wait_timeout=90, max_rounds=5):
+def search_products(driver, query, wait_timeout=WAIT_TIMEOUT, max_rounds=MAX_ROUNDS):
     logger.info("Starting product search for: %s", query)
 
     search_box = WebDriverWait(driver, 10).until(
@@ -138,10 +140,10 @@ def search_products(driver, query, wait_timeout=90, max_rounds=5):
     logger.info("Initial pass: +%s new, %s total", added, len(results))
     save(results)
     logger.info(f"Saved the results to {OUTPUT_FILE}")
-    # driver.execute_script("window.scrollTo(0, 0);")
+
     random_delay(1, 2)
 
-    # Now try to click "Show results" button for up to 5 times
+    # click "Show results" button for up to max_rounds times
     for round_num in range(1, max_rounds + 1):
         known = card_asins(driver)
 
