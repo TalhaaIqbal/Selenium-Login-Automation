@@ -34,7 +34,6 @@ def amazon_search():
 
         # Call search function
         results = search_products(driver, query)
-        logger.info("Search results: %s", results)
         
         input("Press Enter to continue...")
 

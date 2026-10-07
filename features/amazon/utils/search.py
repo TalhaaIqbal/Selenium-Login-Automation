@@ -40,7 +40,7 @@ def search_products(driver, query):
     # Submit Search
     search_box.send_keys(Keys.ENTER)
 
-    # Wait for initial results
+    # Wait for results
     WebDriverWait(driver, 10).until(
         EC.presence_of_all_elements_located(
             (
@@ -50,71 +50,84 @@ def search_products(driver, query):
         )
     )
 
-    # Scroll to load more products (lazy loading)
-    # Scroll 2 times as requested
-    scroll_count = 2
-    for i in range(scroll_count):
-        logger.info("Scrolling to load more products (scroll %s/%s)", i + 1, scroll_count)
-        scroll_to_bottom(driver, steps=8)
-        random_delay(2, 3)
-        
-        # Wait for more products to potentially load
-        WebDriverWait(driver, 5).until(
-            EC.presence_of_all_elements_located(
-                (
-                    By.CSS_SELECTOR,
-                    'div[data-component-type="s-search-result"]'
-                )
-            )
-        )
-
-    # Get all products after scrolling
-    products = driver.find_elements(
-        By.CSS_SELECTOR,
-        'div[data-component-type="s-search-result"]'
-    )
-
-    logger.info("Found %s products after scrolling", len(products))
-
     results = []
     seen_asins = set()
 
-    for product in products:
-        asin = product.get_attribute("data-asin")
+    # Progressive scrolling to load all products, scrolling 2 times to end while extracting data
+    scroll_passes = 2
+    for pass_num in range(scroll_passes):
+        logger.info("Scrolling pass %s/%s", pass_num + 1, scroll_passes)
         
-        # Skip duplicates
-        if asin in seen_asins:
-            continue
-        seen_asins.add(asin)
-
-        title = get_text(product, "h2")
-
-        # main price only, skip the struck-through "Typical/List price"
-        price = get_text(product, ".a-price:not(.a-text-price) .a-offscreen")
-
-        # "4.5 out of 5 stars"
-        rating = get_text(product, '[data-cy="reviews-block"] .a-icon-alt')
-
-        # "1,308 ratings" lives in the aria-label of the count link
-        try:
-            reviews = product.find_element(
+        # Scroll in small increments to trigger lazy loading
+        last_height = driver.execute_script("return document.body.scrollHeight")
+        
+        while True:
+            # Scroll down by a chunk
+            driver.execute_script("window.scrollBy(0, 500);")
+            random_delay(0.3, 0.6)
+            
+            # Extract products that are now in view
+            products = driver.find_elements(
                 By.CSS_SELECTOR,
-                'a[aria-label$="ratings"]'
-            ).get_attribute("aria-label")
-        except NoSuchElementException:
-            reviews = None
-
-        # clean link built from ASIN
-        link = urljoin(driver.current_url, f"/dp/{asin}") if asin else None
-
-        results.append({
-            "asin": asin,
-            "title": title,
-            "price": price,
-            "rating": rating,
-            "reviews": reviews,
-            "link": link,
-        })
+                'div[data-component-type="s-search-result"]'
+            )
+            
+            for product in products:
+                asin = product.get_attribute("data-asin")
+                
+                # Skip duplicates or products without ASIN
+                if not asin or asin in seen_asins:
+                    continue
+                seen_asins.add(asin)
+                
+                # Scroll product into view to ensure content loads
+                driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", product)
+                random_delay(0.2, 0.4)
+                
+                title = get_text(product, "h2")
+                
+                # Skip if no title (not loaded yet)
+                if not title:
+                    continue
+                
+                # main price only, skip the struck-through "Typical/List price"
+                price = get_text(product, ".a-price:not(.a-text-price) .a-offscreen")
+                
+                # "4.5 out of 5 stars"
+                rating = get_text(product, '[data-cy="reviews-block"] .a-icon-alt')
+                
+                # "1,308 ratings" lives in the aria-label of the count link
+                try:
+                    reviews = product.find_element(
+                        By.CSS_SELECTOR,
+                        'a[aria-label$="ratings"]'
+                    ).get_attribute("aria-label")
+                except NoSuchElementException:
+                    reviews = None
+                
+                # clean link built from ASIN
+                link = urljoin(driver.current_url, f"/dp/{asin}") if asin else None
+                
+                results.append({
+                    "asin": asin,
+                    "title": title,
+                    "price": price,
+                    "rating": rating,
+                    "reviews": reviews,
+                    "link": link,
+                })
+            
+            # Check if we've reached the bottom
+            new_height = driver.execute_script("return document.body.scrollHeight")
+            if driver.execute_script("return window.innerHeight + window.scrollY") >= new_height - 100:
+                break
+            
+            # If page height changed (more content loaded), continue scrolling
+            if new_height != last_height:
+                last_height = new_height
+        
+        logger.info("Completed scroll pass %s", pass_num + 1)
+        random_delay(1, 2)
 
     logger.info("Extracted %s unique product details", len(results))
 
