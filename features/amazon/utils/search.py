@@ -14,12 +14,17 @@ from selenium.webdriver.support.ui import WebDriverWait
 from logging_config import logger
 from utils.random_delay import random_delay
 from utils.type_slowly import type_slowly
-from .get_text import get_text
+from .product.get_price import get_price
+from .product.get_review_related import get_reviews
+from .product.get_specs import get_product_specs
+from .product.get_about_this_item import get_about_this_item
+from .product.get_images import get_product_images
+from .product.get_detailed_info import get_product_information
 
 CARD_SELECTOR = 'div[data-component-type="s-search-result"]'
 OUTPUT_FILE = "amazon_search_results.csv"
 WAIT_TIMEOUT = 90
-MAX_ROUNDS = 10
+MAX_ROUNDS = 0
 
 
 def card_asins(driver):
@@ -55,28 +60,8 @@ def extract_to_bottom(driver, results, seen_asins):
                 )
                 random_delay(0.2, 0.4)
 
-                title = get_text(product, "h2")
-                if not title:
-                    continue  # not rendered yet, retried on the next sweep
-
-                price = get_text(product, ".a-price:not(.a-text-price) .a-offscreen")
-                rating = get_text(product, '[data-cy="reviews-block"] .a-icon-alt')
-
-                try:
-                    reviews = product.find_element(
-                        By.CSS_SELECTOR, 'a[aria-label$="ratings"]'
-                    ).get_attribute("aria-label")
-                except NoSuchElementException:
-                    reviews = None
-
-                # only mark as seen once it was actually extracted
                 seen_asins.add(asin)
                 results.append({
-                    "asin": asin,
-                    "title": title,
-                    "price": price,
-                    "rating": rating,
-                    "reviews": reviews,
                     "link": urljoin(driver.current_url, f"/dp/{asin}"),
                 })
                 added += 1
@@ -117,7 +102,7 @@ def save(results):
     logger.info("Saved %s products to %s", len(results), OUTPUT_FILE)
 
 
-def search_products(driver, query, wait_timeout=WAIT_TIMEOUT, max_rounds=MAX_ROUNDS):
+def search_products_links(driver, query, wait_timeout=WAIT_TIMEOUT, max_rounds=MAX_ROUNDS):
     logger.info("Starting product search for: %s", query)
 
     search_box = WebDriverWait(driver, 10).until(
@@ -170,5 +155,47 @@ def search_products(driver, query, wait_timeout=WAIT_TIMEOUT, max_rounds=MAX_ROU
         )
         save(results)
 
+
     logger.info("Extracted %s unique products", len(results))
     return results
+
+
+
+def extract_product_details(driver, product_link):
+    logger.info("Extracting product details from links")
+    driver.get(product_link)
+    
+    # Wait for the page to load
+    WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.CSS_SELECTOR, "#productTitle"))
+    )
+    
+    # Extract product details
+    title_element = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located(
+            (By.CSS_SELECTOR, "#productTitle")
+        )
+    )
+    title = title_element.text.strip()
+
+    product_price = get_price(driver)
+    product_reviews = get_reviews(driver)
+    product_specs = get_product_specs(driver)
+    product_about = get_about_this_item(driver)
+    product_images = get_product_images(driver)
+    product_detailed_info = get_product_information(driver)
+    
+    
+    return {
+        "title": title,
+        "price": product_price,
+        "rating": product_reviews["rating"],
+        "review_count": product_reviews["review_count"],
+        "asin": product_reviews["asin"],
+        "overview_specs": product_specs,
+        "about": product_about,
+        "detailed_info": product_detailed_info,
+        "images": product_images,
+        "link": product_link
+    }
+    
