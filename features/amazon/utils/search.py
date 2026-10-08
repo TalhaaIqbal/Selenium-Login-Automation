@@ -31,7 +31,7 @@ load_dotenv()
 
 CARD_SELECTOR = 'div[data-component-type="s-search-result"]'
 WAIT_TIMEOUT = int(os.getenv("WAIT_TIMEOUT", "90"))
-MAX_ROUNDS = int(os.getenv("MAX_ROUNDS", "0"))
+CRAWL_SHOW_RESULT_ROUNDS = int(os.getenv("CRAWL_SHOW_RESULT_ROUNDS", "0"))
 LINK_OUTPUT_FILE = "amazon_search_link_results.csv"
 
 
@@ -106,7 +106,7 @@ def click_show_results(driver):
 
 
 
-def search_products_links(driver, query, wait_timeout=WAIT_TIMEOUT, max_rounds=MAX_ROUNDS):
+def search_products_links(driver, query, wait_timeout=WAIT_TIMEOUT, CRAWL_SHOW_RESULT_ROUNDS=CRAWL_SHOW_RESULT_ROUNDS):
     logger.info("Starting product search for: %s", query)
 
     search_box = WebDriverWait(driver, 10).until(
@@ -132,8 +132,8 @@ def search_products_links(driver, query, wait_timeout=WAIT_TIMEOUT, max_rounds=M
 
     random_delay(1, 2)
 
-    # click "Show results" button for up to max_rounds times
-    for round_num in range(1, max_rounds + 1):
+    # click "Show results" button for up to CRAWL_SHOW_RESULT_ROUNDS times
+    for round_num in range(1, CRAWL_SHOW_RESULT_ROUNDS + 1):
         known = card_asins(driver)
 
         # Try to auto-click the "Show results" button

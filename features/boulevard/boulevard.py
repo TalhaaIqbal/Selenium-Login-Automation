@@ -9,7 +9,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from logging_config import logger
 from utils.random_delay import random_delay
 from utils.type_slowly import type_slowly
-from utils.init_driver import init_chrome_driver
+from selenium.init_driver import init_chrome_driver
 
 def boulevard_login():
 
