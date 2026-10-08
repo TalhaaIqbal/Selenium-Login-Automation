@@ -80,3 +80,5 @@ pip-delete-this-directory.txt
 *.pem
 *.key
 *.secret
+credentials/
+*.json

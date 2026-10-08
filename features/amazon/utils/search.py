@@ -1,5 +1,7 @@
 import time
+import os
 from urllib.parse import urljoin
+from dotenv import load_dotenv
 
 import pandas as pd
 from selenium.common.exceptions import (
@@ -21,10 +23,16 @@ from .product.get_about_this_item import get_about_this_item
 from .product.get_images import get_product_images
 from .product.get_detailed_info import get_product_information
 
+from .save.save_links import save_links
+
+
+load_dotenv()
+
+
 CARD_SELECTOR = 'div[data-component-type="s-search-result"]'
-OUTPUT_FILE = "amazon_search_results.csv"
-WAIT_TIMEOUT = 90
-MAX_ROUNDS = 0
+WAIT_TIMEOUT = int(os.getenv("WAIT_TIMEOUT", "90"))
+MAX_ROUNDS = int(os.getenv("MAX_ROUNDS", "0"))
+LINK_OUTPUT_FILE = "amazon_search_link_results.csv"
 
 
 def card_asins(driver):
@@ -97,10 +105,6 @@ def click_show_results(driver):
         return False
 
 
-def save(results):
-    pd.DataFrame(results).to_csv(OUTPUT_FILE, index=False)
-    logger.info("Saved %s products to %s", len(results), OUTPUT_FILE)
-
 
 def search_products_links(driver, query, wait_timeout=WAIT_TIMEOUT, max_rounds=MAX_ROUNDS):
     logger.info("Starting product search for: %s", query)
@@ -123,8 +127,8 @@ def search_products_links(driver, query, wait_timeout=WAIT_TIMEOUT, max_rounds=M
 
     added = extract_to_bottom(driver, results, seen_asins)
     logger.info("Initial pass: +%s new, %s total", added, len(results))
-    save(results)
-    logger.info(f"Saved the results to {OUTPUT_FILE}")
+    save_links(results)
+    logger.info(f"Saved the results to {LINK_OUTPUT_FILE}")
 
     random_delay(1, 2)
 
@@ -153,7 +157,7 @@ def search_products_links(driver, query, wait_timeout=WAIT_TIMEOUT, max_rounds=M
         logger.info(
             "Round %s: +%s new, %s total", round_num, added, len(results)
         )
-        save(results)
+        save_links(results)
 
 
     logger.info("Extracted %s unique products", len(results))
