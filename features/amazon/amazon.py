@@ -229,10 +229,9 @@ def amazon_search():
         # Module 1: Initialize driver
         driver = module_init_driver()
         
-        
 
         # Module 2: Navigate and login
-        # module_navigate_and_login(driver, url, phone, password)
+        module_navigate_and_login(driver, url, phone, password)
 
         # # Module 3: Get product links
         # product_links, completed_asins = module_get_product_links(driver, query, results_csv)

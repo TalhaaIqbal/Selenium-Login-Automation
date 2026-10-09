@@ -1,9 +1,9 @@
 import undetected_chromedriver as uc
 
 from logging_config import logger
+from selenium_template.proxy.proxy import build_proxy_url
 from .antibot_detection import patch_webdriver
 from .flags import apply_flags
-from .proxy import pick_proxy
 from .user_agent import apply_user_agent
 from .version import get_chrome_major_version
 
@@ -34,9 +34,9 @@ def init_chrome_driver(
 
     if use_proxy:
         if proxy is None:
-            proxy = pick_proxy()
+            proxy = build_proxy_url()
         if proxy:
-            options.add_argument(f"--proxy-server={proxy}")
+            options.add_argument(f'--proxy-server={proxy}')
 
     if profile_dir:
         options.add_argument(f"--user-data-dir={profile_dir}")
