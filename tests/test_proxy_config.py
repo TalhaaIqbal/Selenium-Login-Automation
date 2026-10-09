@@ -20,15 +20,15 @@ def test_init_driver_with_proxy():
     custom_url = "https://www.myip.com"
     
     try:
-        # Import pick_proxy to see which proxy is selected
-        from selenium_template.proxy import pick_proxy
-        selected_proxy = pick_proxy()
-        
+        # Import build_proxy_url to see which proxy is configured
+        from selenium_template.proxy.proxy import build_proxy_url
+        selected_proxy = build_proxy_url()
+
         if selected_proxy:
-            logger.info(f"Selected proxy: {selected_proxy}")
+            logger.info(f"Selected proxy from env: {selected_proxy}")
         else:
-            logger.warning("No proxy available - test will run without proxy")
-        
+            logger.warning("No proxy configured in env - test will run without proxy")
+
         driver = init_chrome_driver(use_proxy=True)
         logger.info("Driver initialized with proxy successfully")
         
@@ -39,7 +39,7 @@ def test_init_driver_with_proxy():
         logger.info(f"Page title: {driver.title}")
         
         # Take screenshot for debugging
-        driver.save_screenshot("proxy_test_screenshot.png")
+        # driver.save_screenshot("proxy_test_screenshot.png")
         logger.info("Screenshot saved as proxy_test_screenshot.png")
         
         time.sleep(3)

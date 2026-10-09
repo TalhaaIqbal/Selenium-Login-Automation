@@ -1,3 +1,3 @@
-from .proxy import pick_proxy, validate_proxy
+from .proxy import build_proxy_url
 
-__all__ = ["pick_proxy", "validate_proxy"]
+__all__ = ["build_proxy_url"]

@@ -20,7 +20,6 @@ $RECYCLE.BIN/
 # IDEs and Text Editors
 # ==========================================
 # Visual Studio Code
-.vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
@@ -72,8 +71,6 @@ pip-delete-this-directory.txt
 # ==========================================
 # Secrets and Credentials (CRITICAL)
 # ==========================================
-.env
-.env.local
 .env.development.local
 .env.test.local
 .env.production.local
@@ -82,3 +79,4 @@ pip-delete-this-directory.txt
 *.secret
 credentials/
 *.json
+config.bat
