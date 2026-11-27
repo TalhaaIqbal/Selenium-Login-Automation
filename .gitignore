@@ -77,4 +77,3 @@ pip-delete-this-directory.txt
 *.pem
 *.key
 *.secret
-config.bat
